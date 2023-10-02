@@ -1,6 +1,8 @@
-# Taming the Sigmoid Bottleneck: Provably Argmaxable Sparse Multi-Label Classification
+# Sparse Multi-Label Classification (spmlbl)
 
-Herein we provide the code to reproduce our results for the paper.
+Herein we provide the code to reproduce our results for the paper:
+
+> Taming the Sigmoid Bottleneck: Provably Argmaxable Sparse Multi-Label Classification
 
 # Installation
 
@@ -33,6 +35,7 @@ The linear programming algorithm that detects (un)argmaxable label assignments d
 It requires a license, see link above.
 
 
-# Next Steps
+# TODO
 
-Release this code on github together with exact instructions for reproducibility.
+* [ ] Add instructions for accessing the data.
+* [ ] Make it easy to process the datasets via scripts.
