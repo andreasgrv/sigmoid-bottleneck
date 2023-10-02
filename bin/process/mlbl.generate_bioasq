@@ -1,0 +1,19 @@
+#!/bin/bash
+
+mlbl.create_contrained_docs --examples ../../../cyclic_init/bioasq/data/train-1m.json  --max-cardinality-valid 10 --max-cardinality-train 10  --max-unique-labels 2000 --train-size 1000 --valid-size 5000 --out-folder ../../../cyclic_init/bioasq/data/subsets2k
+# Should print 15k
+UNIQUE_EX=$(grep -Eho 'pmid": "[0-9]+' ../../../cyclic_init/bioasq/data/subsets2k/*  | sort | uniq | wc -l)
+if [ "$UNIQUE_EX" -ne "15000" ]
+then
+	echo "Error - unexpected overlap in example ids!"
+	exit 1
+fi
+
+mlbl.create_contrained_docs --examples ../../../cyclic_init/bioasq/data/train-1m.json  --max-cardinality-valid 20 --max-cardinality-train 20  --max-unique-labels 4000 --train-size 2000 --valid-size 5000 --out-folder ../../../cyclic_init/bioasq/data/subsets4k
+# Should print 25k
+UNIQUE_EX=$(grep -Eho 'pmid": "[0-9]+' ../../../cyclic_init/bioasq/data/subsets4k/*  | sort | uniq | wc -l)
+if [ "$UNIQUE_EX" -ne "25000" ]
+then
+	echo "Error - unexpected overlap in example ids!"
+	exit 1
+fi

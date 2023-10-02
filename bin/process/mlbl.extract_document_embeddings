@@ -1,0 +1,62 @@
+#!/env/bin/python
+
+import os
+import json
+import tqdm
+import torch
+import argparse
+import numpy as np
+
+from transformers import AutoTokenizer, AutoModel
+from mlconf import YAMLLoaderAction, ArgumentParser
+
+
+if __name__ == "__main__":
+
+
+    parser = ArgumentParser()
+    parser.add_argument('--examples', type=str, required=True)
+    parser.add_argument('--blueprint', action=YAMLLoaderAction)
+    parser.add_argument('--outfile', type=str, required=True)
+
+    conf = parser.parse_args()
+
+
+    print('## Processing %s...' % conf.examples)
+    print('## Extracting document embeddings using %s...' % conf.encoder_model)
+
+    # Load examples
+    examples = []
+    with open(conf.examples) as f:
+        for i, line in enumerate(f):
+            line = line.rstrip()
+            try:
+                example = json.loads(line)
+            except Exception as e:
+                print('ERROR: Failed to load line %d' % i)
+            examples.append(example)
+
+    tokenizer = AutoTokenizer.from_pretrained(conf.tokenizer_model)
+    encoder = AutoModel.from_pretrained(conf.encoder_model)
+
+    conf.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    device = torch.device(conf.device)
+    encoder = encoder.to(device)
+    encoder.eval()
+
+
+    for e in tqdm.tqdm(examples):
+        text = '%s\n%s' % (e['title'], e['abstractText'])
+        tokens = tokenizer(text, truncation=True,
+                           padding='max_length',
+                           max_length=conf.data.max_length,
+                           return_tensors='pt')
+        tokens = tokens.to(device)
+        with torch.no_grad():
+            doc_encoding = encoder(**tokens)
+        e['doc_embedding'] = doc_encoding['pooler_output'].squeeze().cpu().detach().numpy().tolist()
+
+    print('## Saving file to %s...' % conf.outfile)
+    with open(conf.outfile, 'w') as f:
+        for e in examples:
+            f.write('%s\n' % json.dumps(e))

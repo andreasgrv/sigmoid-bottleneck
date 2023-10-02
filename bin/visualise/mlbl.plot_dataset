@@ -1,0 +1,89 @@
+import os
+import glob
+import argparse
+import datasets
+import numpy as np
+import matplotlib.pyplot as plt
+
+from collections import defaultdict
+
+
+def plot_label_distr(file, vocab_to_idx):
+    vocab_size = len(vocab_to_idx)
+    counts = np.zeros(vocab_size)
+    train = datasets.load_dataset('json',
+                                  data_files=file,
+                                  split='train',
+                                  streaming=False)
+    for row in train:
+        for lbl in row['meshMajor']:
+            v_idx = vocab_to_idx[lbl]
+            counts[v_idx] += 1
+    plt.scatter(np.arange(vocab_size), counts)
+    plt.ylabel('Number of occurrences')
+    plt.xlabel('Label ordered by frequency')
+    plt.yscale('log')
+    plt.title(file)
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_label_cardinality(file, title=None):
+    counts = defaultdict(int)
+    train = datasets.load_dataset('json',
+                                  data_files=file,
+                                  split='train',
+                                  streaming=False)
+    for row in train:
+        counts[len(row['meshMajor'])] += 1
+    print(counts)
+    xx, counts = zip(*sorted(counts.items(), key=lambda x: x[0]))
+    plt.bar(xx, counts)
+    plt.ylabel('# Examples')
+    plt.xlabel('# Active Labels')
+    if title:
+        plt.title(title)
+    else:
+        plt.title(file)
+    plt.tight_layout()
+    plt.show()
+
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--data', type=str, required=True,
+                        help='Path to data file.')
+    parser.add_argument('--vocab', type=str, required=True,
+                        help='Path to vocab file.')
+    parser.add_argument('--title', type=str,
+                        help='Title for figure.')
+    parser.add_argument('--savefig', action='store_true',
+                        help='Whether to save file.')
+
+    args = parser.parse_args()
+
+    plt.tight_layout()
+
+    vocab_file = os.path.join(args.vocab)
+    vocab_to_idx = dict()
+    with open(vocab_file, 'r') as f:
+        for i, line in enumerate(f):
+            line = line.rstrip()
+            vocab_to_idx[line] = i
+
+    plot_label_distr(args.data, vocab_to_idx)
+    plot_label_cardinality(args.data, args.title)
+    # valid_files = glob.glob(os.path.join(args.data, 'valid*'))
+    # print(valid_files)
+    # # train = datasets.load_dataset('json',
+    # #                               data_files=args.data,
+    # #                               split='train',
+    # #                               streaming=False)
+    # print(train)
+    # # if args.savefig:
+    # #     filepath = os.path.join('plots', 'images', '%s.png' % filename)
+    # #     print('Saving plot as %s...' % filepath)
+    # #     plt.savefig(filepath)
+    # # else:
+     #     plt.show()

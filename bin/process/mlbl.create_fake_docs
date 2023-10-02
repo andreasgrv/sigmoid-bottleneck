@@ -1,0 +1,38 @@
+#!/env/bin/python
+
+import numpy as np
+import argparse
+import json
+
+
+if __name__ == "__main__":
+
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--labelfile', required=True)
+
+    opts = parser.parse_args()
+
+    NUM_EXAMPLES = 5000
+    CARDINALITY = 1
+
+    labels = []
+
+    with open(opts.labelfile) as f:
+        for i, line in enumerate(f):
+            line = line.rstrip()
+            if line not in ['<PAD>', '<EOS>']:
+                labels.append(line)
+
+    
+    for i in range(NUM_EXAMPLES):
+
+        superlabel = []
+        superlabel = np.random.choice(labels, size=CARDINALITY, replace=False).tolist()
+        example = dict(journal='BS',
+                       meshMajor=superlabel,
+                       year=2000,
+                       abstractText=' '.join(superlabel),
+                       title='',
+                       pmid=i)
+        print(json.dumps(example))

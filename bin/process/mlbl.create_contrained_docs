@@ -1,0 +1,200 @@
+#!/env/bin/python
+
+import os
+import json
+import argparse
+import numpy as np
+
+from collections import Counter
+
+
+def compute_label_vocab(examples):
+    counter = Counter()
+    for e in examples:
+        counter.update(e['meshMajor'])
+    return counter
+
+
+def filter_by_vocab(examples, vocab):
+    fine = []
+    for e in examples:
+        if all(l in vocab for l in e['meshMajor']):
+            fine.append(e)
+    return fine
+
+
+def filter_by_cardinality(examples, card):
+    fine = []
+    for e in examples:
+        if len(e['meshMajor']) <= card:
+            fine.append(e)
+    return fine
+
+
+def subset_with_label_coverage(examples, vocab, num_examples):
+    subset = []
+    subset_ids = set()
+    # Exactly solving this seems like a hard problem
+    # Let's do a greedy heuristic: Keep track of which labels
+    # we haven't covered, and find examples that cover these.
+    coverage = set()
+    to_cover = set(vocab.keys())
+
+    i = 0
+    while i < num_examples and to_cover:
+        label = to_cover.pop()
+        # NOTE: we cannot add the same article twice
+        # Since if we add an article, we have covered the vocab
+        for ex in examples:
+            if label in ex['meshMajor']:
+                subset.append(ex)
+                subset_ids.add(ex['pmid'])
+                i += 1
+                for l in ex['meshMajor']:
+                    # Remove if exists
+                    to_cover.discard(l)
+                break
+    # Fill with any example if we are covered
+    num_to_fill = num_examples - i
+    enough_remain = num_to_fill < (len(examples) - len(subset))
+    if to_cover or not enough_remain:
+        raise ValueError('Failed to find vocab cover with %d examples' % num_examples)
+    for ex in examples:
+        if ex['pmid'] not in subset_ids:
+            subset.append(ex)
+            subset_ids.add(ex['pmid'])
+            num_to_fill -= 1
+        if num_to_fill == 0:
+            break
+    assert len(subset) == num_examples
+    return subset
+
+
+def expand_sample(examples, more_examples, num_examples):
+    # Expand the sample until it has num_examples
+    # we do not care what we add - as long as no duplicates
+    subset_ids = set(e['pmid'] for e in examples)
+    diff = num_examples - len(examples)
+    assert diff >= 0
+    for e in more_examples:
+        if e['pmid'] not in subset_ids:
+            subset_ids.add(e['pmid'])
+            examples.append(e)
+            diff -= 1
+        if diff == 0:
+            break
+    assert diff == 0
+    return examples
+
+
+def parse_size(size):
+    assert  size > 0
+    s = ''
+    if size / 1e9 >= 1.:
+        s = '%db' % (size // 1e9)
+    elif size / 1e6 >= 1.:
+        s = '%dm' % (size // 1e6)
+    elif size / 1e3 >= 1.:
+        s = '%dk' % (size // 1e3)
+    else:
+        s = '%d' % size
+    return s
+
+
+if __name__ == "__main__":
+
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--examples', type=str, required=True)
+    parser.add_argument('--train-size', type=int, default=500)
+    parser.add_argument('--valid-size', type=int, default=5000)
+    parser.add_argument('--max-cardinality-valid', type=int, default=None)
+    parser.add_argument('--max-cardinality-train', type=int, default=None)
+    parser.add_argument('--max-unique-labels', type=int, default=2000)
+    parser.add_argument('--label-freq-cutoff', type=int, default=5)
+    parser.add_argument('--out-folder', type=str, required=True)
+
+    args = parser.parse_args()
+
+
+    # NOTE: Support for diff not implemented yet
+    assert args.max_cardinality_valid == args.max_cardinality_train
+
+    # Load examples
+    examples = []
+    with open(args.examples) as f:
+        for i, line in enumerate(f):
+            line = line.rstrip()
+            try:
+                example = json.loads(line)
+            except Exception as e:
+                print('ERROR: Failed to load line %d' % i)
+            examples.append(example)
+
+    # Count labels
+    vocab = compute_label_vocab(examples)
+    # Filter vocab by label freq
+    vocab = Counter(dict([(k, v) for k, v in vocab.items()
+                          if v >= args.label_freq_cutoff]))
+    # Filter to most common
+    vocab = Counter(dict(vocab.most_common(args.max_unique_labels)))
+    assert len(vocab) == args.max_unique_labels
+
+    examples = filter_by_vocab(examples, vocab)
+    print('##############################################################')
+    print('##  %d examples left after filtering by vocab of size %d' % (len(examples), len(vocab)))
+    print('##############################################################')
+
+    if args.max_cardinality_train is not None:
+        max_card = max(args.max_cardinality_valid, args.max_cardinality_train)
+        examples = filter_by_cardinality(examples, max_card)
+
+        print('##  %d examples left after filtering by cardinality %d' % (len(examples), args.max_cardinality_valid))
+        print('##############################################################')
+
+    train_subset = subset_with_label_coverage(examples, vocab, args.train_size)
+
+    parts = 6
+
+    # Add more examples to training set (we can drop superfluous without losing label coverage)
+    train_subset_expanded = expand_sample(train_subset, examples, parts * args.train_size)
+    train_subset_ids = set(e['pmid'] for e in train_subset_expanded)
+
+    remain_subset = [e for e in examples if e['pmid'] not in train_subset_ids]
+
+    valid_subset = subset_with_label_coverage(remain_subset, vocab, args.valid_size)
+    valid_subset_ids = set(e['pmid'] for e in valid_subset)
+
+    assert len(valid_subset_ids.intersection(train_subset_ids)) == 0
+
+    if not os.path.exists(args.out_folder):
+        os.makedirs(args.out_folder)
+
+    for p in range(1, parts+1):
+        if p == parts:
+            train_out_file = 'valid-%s.json' % (parse_size(args.train_size))
+        else:
+            train_out_file = 'train-%s-part-%d.json' % (parse_size(args.train_size), p)
+        train_path = os.path.join(args.out_folder, train_out_file)
+
+        print('Writing training file to %s...' % train_path)
+        with open(train_path, 'w') as f:
+            lines = [json.dumps(t)
+                     for t in train_subset_expanded[(p-1)*args.train_size: p * args.train_size]]
+            f.write('\n'.join(lines))
+
+    valid_out_file = 'test-%s.json' % (parse_size(args.valid_size))
+    valid_path = os.path.join(args.out_folder, valid_out_file)
+    vocab_path = os.path.join(args.out_folder, 'vocab.txt')
+
+    print('Writing validation file to %s...' % valid_path)
+    with open(valid_path, 'w') as f:
+        lines = [json.dumps(v) for v in valid_subset]
+        f.write('\n'.join(lines))
+
+    print('Writing vocab file to %s...' % vocab_path)
+    with open(vocab_path, 'w') as f:
+        lines = [k for k in vocab.keys()]
+        lines.append('<EOS>')
+        lines.append('<PAD>')
+        f.write('\n'.join(lines))

@@ -1,0 +1,96 @@
+import os
+import re
+import seaborn
+import argparse
+import numpy as np
+import pandas as pd
+
+from matplotlib.ticker import MaxNLocator
+from collections import defaultdict
+
+
+def load_attributes(filename, attributes):
+    results = dict()
+    with open(filename, 'r') as f:
+        header = next(f).strip().split('\t')
+        for col in header:
+            results[col] = []
+        nlines = 0
+        for line in f:
+            line = line.strip()
+            for i, v in enumerate(map(float, line.split('\t'))):
+                results[header[i]].append(v)
+            if nlines > args.timesteps:
+                break
+            nlines += 1
+    results = {attr: results[attr] for attr in attributes}
+
+    return results
+
+
+def load_results(filenames, attributes):
+    results = {}
+    for filename in filenames:
+        exp = os.path.basename(os.path.dirname(filename))
+        exp = exp.replace('.tsv', '')
+        exp = exp.replace('-bottleneck', '')
+        results[exp] = load_attributes(filename, attributes)
+        # k, v, d = map(int, re.findall(r'-k-(?P<k>\d+)-v-(?P<v>\d+)-d-(?P<d>\d+)', exp)[0])
+        # num_params = v * d
+        # if 'vander' in exp:
+        #     num_slack_params = v * (d - 2 * k - 1)
+        #     num_vander_params = v + num_slack_params
+        #     param_perc = (num_vander_params / num_params) * 100
+        # else:
+        #     param_perc = 100.00
+        # results[exp]['param_perc'] = param_perc
+
+    # Make the dict be attr headed
+    attr_results = defaultdict(dict)
+    for fname, attrs in results.items():
+        for attr, vals in attrs.items():
+            attr_results[attr][fname] = vals
+    return attr_results
+
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--results', type=str, nargs='+', required=True,
+                        help='Path to results tsv files.')
+    parser.add_argument('--attributes', type=str, nargs='+', required=True,
+                        help='What attributes to plot.')
+    parser.add_argument('--sort-by', type=str, required=False,
+                        help='What attribute to sort by.')
+    parser.add_argument('--timesteps', type=int, default=None,
+                        help='Timesteps to plot.')
+    # parser.add_argument('--save', type=str, default=None,
+    #                     help='Where to save file.')
+
+    args = parser.parse_args()
+    args.timesteps = args.timesteps or np.inf
+
+    results = load_results(args.results, args.attributes)
+    seaborn.set_context('talk')
+
+    num_attrs = len(results)
+    num_models = len(results[list(results.keys())[0]])
+
+    # print(num_attrs, num_models)
+
+    table = dict()
+    for attr in results.keys():
+        # print(attr)
+        table[attr] = dict()
+        for model, vals in results[attr].items():
+            if 'loss' in attr:
+                table[attr][model] = np.min(vals)
+            else:
+                table[attr][model] = np.max(vals)
+    df = pd.DataFrame.from_dict(table)
+    if args.sort_by is not None:
+        df = df.sort_values(by=args.sort_by, ascending=False)
+    print(df)
+    print(r'\begin{table}')
+    print(df[args.attributes].to_latex(float_format="%.2f"))
+    print(r'\end{table}')

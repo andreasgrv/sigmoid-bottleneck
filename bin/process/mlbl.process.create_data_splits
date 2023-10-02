@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# USAGE:
+# ./create_validation_set.sh ../data/bioasq-2021/allMeSH_2021 > ../data/bioasq-2021/example.json
+
+filepath="$1"
+
+# https://gist.github.com/koreyou/c10597aa9744978a078d108ee369728d
+# seeding adopted from https://stackoverflow.com/a/41962458/7820599
+get_seeded_random()
+{
+  seed="$1";
+  openssl enc -aes-256-ctr -pass pass:"$seed" -nosalt \
+    </dev/zero 2>/dev/null;
+}
+
+# Only use parts 10 +
+# for f in $filepath/*part_[0-9][0-9]
+# for f in $filepath/part_2[0-4]
+# do
+# 	shuf -n 1000 --random-source=<(get_seeded_random 13) $f
+# done
+
+echo -e "Shuffling dataset..."
+cat "$filepath"/* | shuf -n 15000000 --random-source=<(get_seeded_random 13)  > /tmp/output.json
+
+echo -e "Creating data splits..."
+
+sed -n "1,1000p" /tmp/output.json > train-1k.json
+sed -n "1,10000p" /tmp/output.json > train-10k.json
+sed -n "1,100000p" /tmp/output.json > train-100k.json
+sed -n "1,1000000p" /tmp/output.json > train-1m.json
+sed -n "1,10000000p" /tmp/output.json > train-10m.json
+sed -n "10000001,10001000p" /tmp/output.json > valid-1k.json
+sed -n "10000001,10010000p" /tmp/output.json > valid-10k.json
+sed -n "10000001,10100000p" /tmp/output.json > valid-100k.json
+sed -n "10100001,10200000p" /tmp/output.json > test-100k.json
+
+rm /tmp/output.json

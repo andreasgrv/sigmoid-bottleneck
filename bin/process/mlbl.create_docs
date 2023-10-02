@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+#
+# for K in 5 10
+# do
+# 	# for VOCAB_SIZE in 200 1000 2000
+# 	VOCAB_SIZE=200
+# 	foldername="subsets250-k-$K-v-$VOCAB_SIZE"
+# 	echo -e "Creating dataset with vocab size=$VOCAB_SIZE and cardinality K=$K in folder $foldername..."
+# 	mkdir -p "$foldername"
+# 	mlbl.create_contrained_docs --examples train-10m.json  --max-cardinality-valid $K --max-cardinality-train $K  --max-unique-labels $VOCAB_SIZE --train-size 250 --valid-size 1000 --out-folder $foldername
+# 	for jf in $foldername/*.json
+# 	do
+# 		mlbl.extract_document_embeddings  --examples $jf --outfile $jf --blueprint ~/Playground/cyclic_init/bioasq/blueprints/vander.yaml
+# 	done
+# done
+#
+# for K in 5 10 20
+# do
+# 	VOCAB_SIZE=1000
+# 	foldername="subsets1k-k-$K-v-$VOCAB_SIZE"
+# 	echo -e "Creating dataset with vocab size=$VOCAB_SIZE and cardinality K=$K in folder $foldername..."
+# 	mkdir -p "$foldername"
+# 	mlbl.create_contrained_docs --examples train-10m.json  --max-cardinality-valid $K --max-cardinality-train $K  --max-unique-labels $VOCAB_SIZE --train-size 1000 --valid-size 2000 --out-folder $foldername
+# 	for jf in $foldername/*.json
+# 	do
+# 		mlbl.extract_document_embeddings  --examples $jf --outfile $jf --blueprint ~/Playground/cyclic_init/bioasq/blueprints/vander.yaml
+# 	done
+# done
+
+# for K in 5 10 20
+# do
+# 	VOCAB_SIZE=4000
+# 	foldername="subsets2k-k-$K-v-$VOCAB_SIZE"
+# 	echo -e "Creating dataset with vocab size=$VOCAB_SIZE and cardinality K=$K in folder $foldername..."
+# 	mkdir -p "$foldername"
+# 	mlbl.create_contrained_docs --examples train-10m.json  --max-cardinality-valid $K --max-cardinality-train $K  --max-unique-labels $VOCAB_SIZE --train-size 2000 --valid-size 2000 --out-folder $foldername
+# 	for jf in $foldername/*.json
+# 	do
+# 		mlbl.extract_document_embeddings  --examples $jf --outfile $jf --blueprint ~/Playground/cyclic_init/bioasq/blueprints/vander.yaml
+# 	done
+# done
+
+# mkdir subsets1k-c-1000
+# spmlbl.create_contrained_docs --examples ../../../cyclic_init/bioasq/data/train-1m.json  --max-cardinality-valid 20 --max-cardinality-train 20  --max-unique-labels 4000 --train-size 2000 --valid-size 5000 --out-folder ../../../cyclic_init/bioasq/data/subsets4k
+
+for K in 5 10
+do
+	VOCAB_SIZE=1000
+	foldername="subsets-k-$K-v-$VOCAB_SIZE"
+	echo -e "Creating dataset with vocab size=$VOCAB_SIZE and cardinality K=$K in folder $foldername..."
+	mkdir -p "$foldername"
+	mlbl.create_contrained_docs --examples train-5m.json  --max-cardinality-valid $K --max-cardinality-train $K  --max-unique-labels $VOCAB_SIZE --train-size 2000 --valid-size 2000 --out-folder $foldername
+	for jf in $foldername/*.json
+	do
+		mlbl.extract_document_embeddings  --examples $jf --outfile $jf --blueprint ~/Playground/cyclic_init/bioasq/blueprints/vander.yaml
+	done
+done
+
+
+for K in 5 10
+do
+	VOCAB_SIZE=5000
+	foldername="subsets-k-$K-v-$VOCAB_SIZE"
+	echo -e "Creating dataset with vocab size=$VOCAB_SIZE and cardinality K=$K in folder $foldername..."
+	mkdir -p "$foldername"
+	mlbl.create_contrained_docs --examples train-5m.json  --max-cardinality-valid $K --max-cardinality-train $K  --max-unique-labels $VOCAB_SIZE --train-size 4000 --valid-size 4000 --out-folder $foldername
+	for jf in $foldername/*.json
+	do
+		mlbl.extract_document_embeddings  --examples $jf --outfile $jf --blueprint ~/Playground/cyclic_init/bioasq/blueprints/vander.yaml
+	done
+done
+
+for K in 5 10
+do
+	VOCAB_SIZE=10000
+	foldername="subsets-k-$K-v-$VOCAB_SIZE"
+	echo -e "Creating dataset with vocab size=$VOCAB_SIZE and cardinality K=$K in folder $foldername..."
+	mkdir -p "$foldername"
+	mlbl.create_contrained_docs --examples train-5m.json  --max-cardinality-valid $K --max-cardinality-train $K  --max-unique-labels $VOCAB_SIZE --train-size 8000 --valid-size 8000 --out-folder $foldername
+	for jf in $foldername/*.json
+	do
+		mlbl.extract_document_embeddings  --examples $jf --outfile $jf --blueprint ~/Playground/cyclic_init/bioasq/blueprints/vander.yaml
+	done
+done

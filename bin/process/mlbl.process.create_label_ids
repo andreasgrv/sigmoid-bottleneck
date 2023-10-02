@@ -1,0 +1,14 @@
+#!/bin/bash
+
+echo $1
+filepath="$(dirname $1)"
+# fname="$(basename $1)"
+# echo $filepath
+# TODO: Rewrite this in python and traverse in order
+outfile="$filepath/MeSH_labels.txt"
+cat $1 | cut -d'=' -f1 | sort | uniq > $outfile
+echo "Adding <EOS> token to labels"
+echo "<EOS>" >> $outfile
+echo "Adding <PAD> token to labels"
+echo "<PAD>" >> $outfile
+echo "$(wc -l $outfile | cut -d" " -f1) lines written to $outfile ..."

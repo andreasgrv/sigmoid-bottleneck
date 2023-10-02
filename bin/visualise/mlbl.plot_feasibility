@@ -1,0 +1,108 @@
+import os
+import json
+import argparse
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+
+from collections import Counter
+
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--json', help='JSON file with analysis results.')
+    parser.add_argument('--savefig', type=str, help='Where to save the figure.')
+    parser.add_argument('--perc', type=int, help='Percentile', default=1)
+
+    args = parser.parse_args()
+
+    model = os.path.basename(os.path.dirname(os.path.dirname(args.json)))
+    split = os.path.basename(args.json)[:-5]
+
+    with open(args.json, 'r') as f:
+        data = json.load(f)
+
+    UNARGMAXABLE_RAD = 1e-10
+
+    steps = []
+    num_feasible = []
+    gold_radii_1perc = []
+    pred_radii_1perc = []
+    for timestep in data:
+        stati, pred_radii, gold_radii = [], [], []
+        steps.append(timestep['cp'])
+        feasible, conforming = 0, 0
+        for example in timestep['examples']:
+            gold = example['gold']
+            pred = example['pred']
+
+            stati.append(gold['status'])
+            if gold['status'] not in (2, 3, 4):
+                print(gold['status'])
+            # assert example['status'] in (2, 3, 4)
+            if gold['feasible']:
+                feasible += 1
+                gold_radii.append(gold['radius'])
+            # else:
+            #     gold_radii.append(UNARGMAXABLE_RAD)
+
+            pred_radii.append(pred['radius'])
+
+        if len(gold_radii) < 10:
+            gold_radii_1perc.append(UNARGMAXABLE_RAD)
+        else:
+            gold_radii = np.array(gold_radii)
+            gold_radii_1perc.append(np.percentile(gold_radii, args.perc))
+
+        print(Counter(stati))
+        pred_radii = np.array(pred_radii)
+        pred_radii_1perc.append(np.percentile(pred_radii, args.perc))
+
+        num_feasible.append(feasible)
+
+    total = len(timestep['examples'])
+
+    fig, axis = plt.subplots(figsize=(5, 10), nrows=2)
+    axis[0].plot(steps, num_feasible, '-o', label='Number Feasible')
+    axis[0].hlines(total, xmin=steps[0], xmax=steps[-1], color='k', ls='--', lw=1., label='Number of labels')
+    axis[0].set_ylim([-1, total *1.1])
+    axis[0].set_xlabel('# Training Steps', fontsize=20)
+    axis[0].set_ylabel('# Feasible Labels', fontsize=20)
+    axis[1].plot(steps, gold_radii_1perc, '-o', color='g', label='Gold Radius')
+    axis[1].plot(steps, pred_radii_1perc, '-o', color='r', label='Predicted Radius')
+    axis[1].set_yscale('log')
+    axis[1].set_ylim([UNARGMAXABLE_RAD, 1e4])
+    axis[1].set_xlabel('# Training Steps', fontsize=20)
+    axis[1].set_ylabel('%d-percentile of $\epsilon$' % args.perc, fontsize=20)
+    plt.suptitle('%s @ %s set' % (model, split))
+    axis[0].legend(fontsize=15, loc='lower right')
+    axis[1].legend(fontsize=15, loc='lower right')
+    axis[0].tick_params(axis='both', labelsize=12)
+    axis[1].tick_params(axis='both', labelsize=12)
+    plt.tight_layout()
+
+    # print(' & ' + ' & '.join(map(str, steps)) + r'\\')
+    # print(model + ' & ' + ' & '.join(map(str, num_feasible)) + r'\\')
+    # colors = cm.tab10
+    # for k, v in sorted(feasible_per_card.items(), key=lambda x: int(x[0])):
+    #     k = int(k)
+    #     axes[k-1].stackplot(steps, v,
+    #                         labels=['$k$=%d' % k],
+    #                         colors=[colors(k)],
+    #                         alpha=.75)
+    #     axes[k-1].hlines(cp_total[k], xmin=steps[0], xmax=steps[-1], color='k', ls='--', lw=1.)
+    #     # axes[k-1].set_ylim([0, cp_total[k]])
+    #     axes[k-1].xaxis.set_major_locator(plt.MaxNLocator(11))
+    #     axes[k-1].yaxis.get_major_locator().set_params(integer=True)
+    #     axes[k-1].legend(loc='lower center')
+    #     axes[k-1].set_ylabel('# Feasible Labels')
+    # axes[-1].set_xlabel('# Training Steps')
+    # plt.title('%s for %s' % (title, model))
+    # plt.tight_layout()
+
+    if args.savefig:
+        plt.savefig(args.savefig)
+    else:
+        plt.show()

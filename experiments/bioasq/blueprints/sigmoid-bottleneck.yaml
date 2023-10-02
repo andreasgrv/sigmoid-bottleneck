@@ -1,0 +1,175 @@
+name: &exp_name sigmoid-bottleneck
+seed: 14
+num_proc: 1
+paths:
+  $classname: MLBLPath
+  $module: spmlbl
+  experiment_name: *exp_name
+  root_folder: CHANGE_ME
+data:
+  # Maximum sentence length in subword tokens
+  max_length: 512
+  # Maximum number of labels that can be assigned per example
+  max_cardinality: 50
+  labels_file: 'data/MeSH_labels.txt'
+  train_path: 'data/train-100k.json'
+  valid_path: 'data/valid-10k.json'
+metrics: &metrics
+  train:
+    loss:
+      $module: spmlbl.metrics
+      $classname: Average
+      window_size: 50
+      label: Loss
+    exact_acc:
+      $module: spmlbl.metrics
+      $classname: ExactAccuracy
+      window_size: 50
+    # f1:
+    #   $module: spmlbl.metrics
+    #   $classname: SKLearnMetricAvg
+    #   sklearn_metric: f1_score
+    #   average: micro
+    #   zero_division: 0
+    #   label: f1
+    #   window_size: 50
+    p5:
+      $module: spmlbl.metrics
+      $classname: PrecisionAtK
+      window_size: 200
+      k: 5
+    p10:
+      $module: spmlbl.metrics
+      $classname: PrecisionAtK
+      window_size: 200
+      k: 10
+    r5:
+      $module: spmlbl.metrics
+      $classname: RecallAtK
+      window_size: 200
+      k: 5
+    r10:
+      $module: spmlbl.metrics
+      $classname: RecallAtK
+      window_size: 200
+      k: 10
+    # macrof1:
+    #   $module: spmlbl.metrics
+    #   $classname: SKLearnMetricAvg
+    #   sklearn_metric: f1_score
+    #   average: macro
+    #   zero_division: 0
+    #   label: macrof1
+    #   window_size: 50
+    # ndcg:
+    #   $module: spmlbl.metrics
+    #   $classname: SKLearnMetricAvg
+    #   sklearn_metric: ndcg_score
+    #   label: ndcg
+    #   window_size: 50
+    # ndcg5:
+    #   $module: spmlbl.metrics
+    #   $classname: SKLearnMetricAvg
+    #   sklearn_metric: ndcg_score
+    #   k: 5
+    #   label: ndcg@5
+    #   window_size: 50
+    # ndcg10:
+    #   $module: spmlbl.metrics
+    #   $classname: SKLearnMetricAvg
+    #   sklearn_metric: ndcg_score
+    #   k: 10
+    #   label: ndcg@10
+    #   window_size: 50
+    time:
+      $module: spmlbl.metrics
+      $classname: Time
+  valid:
+    loss:
+      $module: spmlbl.metrics
+      $classname: Average
+      window_size: .inf
+      label: Loss
+    exact_acc:
+      $module: spmlbl.metrics
+      $classname: ExactAccuracy
+      window_size: .inf
+    f1:
+      $module: spmlbl.metrics
+      $classname: SKLearnMetricAvg
+      sklearn_metric: f1_score
+      average: micro
+      zero_division: 0
+      label: f1
+      window_size: .inf
+    p5:
+      $module: spmlbl.metrics
+      $classname: PrecisionAtK
+      window_size: .inf
+      k: 5
+    p10:
+      $module: spmlbl.metrics
+      $classname: PrecisionAtK
+      window_size: .inf
+      k: 10
+    r5:
+      $module: spmlbl.metrics
+      $classname: RecallAtK
+      window_size: .inf
+      k: 5
+    r10:
+      $module: spmlbl.metrics
+      $classname: RecallAtK
+      window_size: .inf
+      k: 10
+    macrof1:
+      $module: spmlbl.metrics
+      $classname: SKLearnMetricAvg
+      sklearn_metric: f1_score
+      average: macro
+      zero_division: 0
+      label: macrof1
+      window_size: .inf
+    ndcg:
+      $module: spmlbl.metrics
+      $classname: SKLearnMetricAvg
+      sklearn_metric: ndcg_score
+      label: ndcg
+      window_size: .inf
+    ndcg5:
+      $module: spmlbl.metrics
+      $classname: SKLearnMetricAvg
+      sklearn_metric: ndcg_score
+      k: 5
+      label: ndcg@5
+      window_size: .inf
+    ndcg10:
+      $module: spmlbl.metrics
+      $classname: SKLearnMetricAvg
+      sklearn_metric: ndcg_score
+      k: 10
+      label: ndcg@10
+      window_size: .inf
+timer:
+    $module: spmlbl.utils
+    $classname: Timer
+# ============== MODEL PARAMS =======================
+output_layer:
+  $classname: SigmoidBottleneckLayer
+  $module: spmlbl.components
+  in_dim: 768
+  out_dim: 29929
+  feature_dim: 128
+freeze_encoder: true
+tokenizer_model: 'microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract'
+encoder_model: 'microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract'
+batch_size: 1024
+lr: 1.e-3
+max_iters: 100000
+# Training options
+patience: 10
+eval_every: 500
+print_every: 100
+continue_training: False
+use_bpe_labels: False
+save_checkpoints: True
