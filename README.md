@@ -6,12 +6,17 @@ Herein we provide the code to reproduce our results for the paper:
 
 # Installation
 
+Below installation is for main library.
+
 ## Install Python Dependencies
 ```bash
 python3.8 -m venv .env
 source .env/bin/activate
+# Adapt cuda in requirements to your use case
 pip install -r requirements.txt
 pip install -e .
+# NOTE: For each specific dataset you may need to install more libraries
+# See README.md file in each experiment section
 ```
 
 ## Set Environment Variables
@@ -37,5 +42,6 @@ It requires a license, see link above.
 
 # TODO
 
+* [ ] Rerun experiments for CAML with correct N
 * [ ] Add instructions for accessing the data.
 * [ ] Make it easy to process the datasets via scripts.
