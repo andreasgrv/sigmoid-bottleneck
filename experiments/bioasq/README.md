@@ -16,6 +16,7 @@ For more information on how we created the original splits - e.g. got the pmids,
 The script below assumes you have placed `allMeSH_2021.json` in the `experiments/bioasq/data` folder.
 
 ```bash
+aws s3 cp s3://sigmoid-bottleneck/bioasq/data/* --no-sign-request  .
 python construct_dataset.py --data allMeSH_2021.json
 ```
 
