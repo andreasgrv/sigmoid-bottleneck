@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# NOTE: This is how the dataset was generated originally - see /bin/preprocess scripts for more details.
 # spmlbl.create_contrained_docs --examples train-1m.json  --max-unique-labels 20000 --train-size 100000 --valid-size 10000 --out-folder subsets-v-20000
 
 for jf in subsets-v-20000/*.json
