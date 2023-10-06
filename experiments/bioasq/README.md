@@ -16,7 +16,12 @@ For more information on how we created the original splits - e.g. got the pmids,
 The script below assumes you have placed `allMeSH_2021.json` in the `experiments/bioasq/data` folder.
 
 ```bash
-aws s3 cp s3://sigmoid-bottleneck/bioasq/data/* --no-sign-request  .
+pip install awscli
+mkdir -p data/subsets-v-20000
+aws s3 cp s3://sigmoid-bottleneck/bioasq/data/train-100k-part-1.csv --no-sign-request  data/subsets-v-20000
+aws s3 cp s3://sigmoid-bottleneck/bioasq/data/valid-5k.csv --no-sign-request  data/subsets-v-20000
+aws s3 cp s3://sigmoid-bottleneck/bioasq/data/test-10k.csv --no-sign-request  data/subsets-v-20000
+aws s3 cp s3://sigmoid-bottleneck/bioasq/data/vocab.txt --no-sign-request  data/subsets-v-20000
 python construct_dataset.py --data allMeSH_2021.json
 ```
 
