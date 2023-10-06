@@ -40,8 +40,18 @@ The linear programming algorithm that detects (un)argmaxable label assignments d
 It requires a license, see link above.
 
 
-# TODO
+## Run Tests
 
-* [ ] Rerun experiments for CAML with correct N
-* [ ] Add instructions for accessing the data.
-* [ ] Make it easy to process the datasets via scripts.
+Tests require dependencies and Gurobi.
+
+```bash
+py.test tests
+```
+
+## Experiments
+
+For each dataset, see the `README.md` file in the corresponding folder under experiments.
+
+* [MIMIC-III](experiments/mimic/README.md)
+* [BioASQ Task A](experiments/bioasq/README.md)
+* [OpenImages v6](experiments/openimagesv6/README.md)

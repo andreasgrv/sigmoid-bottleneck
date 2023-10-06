@@ -14,7 +14,7 @@ Use absolute paths to point to datasets and point `MODEL_DIR` to the experiments
 There may be additional python dependencies you need to install, but we updated the caml code to be compatible with the more recent torch version we installed for spmlbl.
 
 ## Running experiments
-```
+```bash
 mkdir -p experiments
 ./run.sh
 ```

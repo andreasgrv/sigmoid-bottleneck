@@ -45,7 +45,7 @@ The script should take approximately 5 minutes to run and it will create 3 json 
 
 You can use the scripts `run-bsl.sh` and `run-dft.sh` to train the BSL and DFT models, correspondingly.
 Set the `SEED` environment variable to change the random state.
-```
+```bash
 export SEED=0
 ./run-bsl.sh
 ```
@@ -54,7 +54,7 @@ Each experiment is written to the experiment folder.
 
 ## Verifying results
 
-```
+```bash
 # Verification via the LP is parallelisable (the larger you can afford to make NUM_PROC, the better)
 export MLBL_NUM_PROC=10
 ./eval.sh
