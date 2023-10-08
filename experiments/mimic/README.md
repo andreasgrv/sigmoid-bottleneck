@@ -15,6 +15,14 @@ There may be additional python dependencies you need to install, but we updated 
 
 ## Running experiments
 ```bash
+export PYTHONPATH="$PWD/caml"
 mkdir -p experiments
 ./run.sh
+```
+
+## Verifying models
+
+After running the command below, each model folder will be populated with two analysis files: `test-analysis.json` and `dev-analysis.json`.
+```bash
+./eval.sh
 ```
