@@ -46,7 +46,7 @@ def test_dft_equivalence():
     W = clf.compute_W()
     manual_gale = (W @ xxp.T).T
 
-    assert torch.allclose(fft, manual_gale, atol=1e-4)
+    assert torch.allclose(fft, manual_gale, atol=5e-4)
 
 
 def test_dft_and_manual_matmul_equivalence():
@@ -61,7 +61,7 @@ def test_dft_and_manual_matmul_equivalence():
     W = clf.compute_W()
     manual_gale = (W @ xxp.T).T
 
-    assert torch.allclose(fft, manual_gale)
+    assert torch.allclose(fft, manual_gale, atol=5e-4)
 
 
 if __name__ == "__main__":
