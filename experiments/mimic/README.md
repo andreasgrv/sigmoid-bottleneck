@@ -17,6 +17,7 @@ There may be additional python dependencies you need to install, but we updated 
 ```bash
 export PYTHONPATH="$PWD/caml"
 mkdir -p experiments
+mkdir -p logs
 ./run.sh
 ```
 

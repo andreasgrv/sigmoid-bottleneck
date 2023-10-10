@@ -47,7 +47,9 @@ You can use the scripts `run-bsl.sh` and `run-dft.sh` to train the BSL and DFT m
 Set the `SEED` environment variable to change the random state.
 ```bash
 export SEED=0
+mkdir -p logs
 ./run-bsl.sh
+./run-dft.sh
 ```
 
 Each experiment is written to the experiment folder.

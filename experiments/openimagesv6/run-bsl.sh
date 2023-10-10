@@ -14,13 +14,4 @@ do
 		--batch_size $BATCH_SIZE \
 		--lr $LR \
 		--seed $SEED > logs/BSL-D-$D-S-$SEED
-	# python train.py \
-	# 	--blueprint blueprints/dft.yaml \
-	#    	--paths.experiment_name DFT-D-$D-S-$SEED \
-	# 	--model model/Open_ImagesV6_TRresNet_L_448.pth \
-	# 	--batch_size $BATCH_SIZE \
-	# 	--output_layer.slack_dims $D \
-	# 	--output_layer.k 30 \
-	# 	--lr $LR \
-	# 	--seed $SEED > logs/DFT-D-$D-S-$SEED
 done
