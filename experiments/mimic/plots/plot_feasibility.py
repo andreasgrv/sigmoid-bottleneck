@@ -111,6 +111,6 @@ if __name__ == "__main__":
     ax.set_ylim([-2.5, 102.5])
     # ax.legend(loc=4)
     # ax.legend(bbox_to_anchor=(.0, 1.25), loc='upper left')
-    plt.title('MIMIC III')
+    plt.title('MIMIC-III')
     plt.tight_layout()
     plt.show()

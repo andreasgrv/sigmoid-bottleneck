@@ -99,7 +99,7 @@ if __name__ == "__main__":
     # ax1.legend()
     ax2.grid(None)
     # ax2.legend()
-    plt.title('MIMIC III')
+    plt.title('MIMIC-III')
     plt.tight_layout()
     plt.show()
     # print(df2)

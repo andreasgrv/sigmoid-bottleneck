@@ -26,6 +26,7 @@ import learn.models as models
 import learn.tools as tools
 
 def main(args):
+    np.random.seed(args.seed)
     torch.manual_seed(args.seed)
     start = time.time()
     args, model, optimizer, params, dicts = init(args)
