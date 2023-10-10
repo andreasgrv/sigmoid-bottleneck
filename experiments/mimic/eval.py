@@ -5,9 +5,9 @@ import argparse
 import numpy as np
 import datasets
 
-from mlbl.verifier import ArgmaxableSubsetVerifier
-from mlbl.components import KSparseFFTClassifier
-from mlbl.plot import plot_cardinalities
+from spmlbl.verifier import ArgmaxableSubsetVerifier
+from spmlbl.components import KSparseFFTClassifier
+from spmlbl.plot import plot_cardinalities
 from constants import MIMIC_3_DIR
 
 
