@@ -9,7 +9,7 @@ import pickle
 
 import torch
 from torch.autograd import Variable
-from spmlbl.components import SigmoidBottleneckLayer, KSparseClassifier, KSparseFFTClassifier, KSparseClassifierV
+from spmlbl.components import SigmoidBottleneckLayer, KSparseFFTClassifier
 
 from learn import models
 from constants import *
@@ -31,12 +31,8 @@ def pick_model(args, dicts):
         # Determine which classifier we are using
         if args.clf == "bottleneck":
             clf = SigmoidBottleneckLayer(args.num_filter_maps, Y, args.slack_dims)
-        elif args.clf == "vander":
-            clf = KSparseClassifier(args.num_filter_maps, Y, args.k, slack_dims=args.slack_dims)
         elif args.clf == "fft":
             clf = KSparseFFTClassifier(args.num_filter_maps, Y, args.k, slack_dims=args.slack_dims)
-        elif args.clf == "grass":
-            clf = KSparseClassifierV(args.num_filter_maps, Y, args.k, slack_dims=args.slack_dims)
         else:
             raise ValueError("Unknown mlp")
 
