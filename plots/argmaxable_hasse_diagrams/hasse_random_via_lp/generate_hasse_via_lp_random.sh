@@ -7,7 +7,7 @@ do
 	xelatex random-lp-hasse-n-$N-c-$C.tex
 done
 
-N=8
+N=6
 for C in 1 2 3
 do
 	python feasible_hasse_via_lp_random.py --N $N --C $C | grep -vwE "Academic" | grep -vwE "Set parameter Username" > random-lp-hasse-n-$N-c-$C.tex
