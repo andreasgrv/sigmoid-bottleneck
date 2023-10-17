@@ -2,7 +2,7 @@
 
 Herein we provide the code to reproduce our results for the paper:
 
-> Taming the Sigmoid Bottleneck: Provably Argmaxable Sparse Multi-Label Classification
+[Taming the Sigmoid Bottleneck: Provably Argmaxable Sparse Multi-Label Classification](https://arxiv.org/abs/2310.10443)
 
 # Installation
 
